@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MICE Library: science fiction games and Card’s quotient</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e4ebf2; --side:#cfdae5; --panel:#f3f6f9; --panel2:#dfe8f0; --header:#c3d1de;
+  --text:#14212e; --muted:#475b6e; --accent:#14639a; --line:#b3c3d2;
+  --btn1:#648f1a; --btn2:#4a7a14; --btntext:#ffffff;
+  --milieu:#157a6d; --idea:#7048a8; --character:#b4551f; --event:#b8322d;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2838; --side:#171d25; --panel:#16202d; --panel2:#22303f; --header:#171a21;
+    --text:#dce7f0; --muted:#8fa3b5; --accent:#66c0f4; --line:#2a3b4d;
+    --milieu:#4fc1b0; --idea:#c39ae6; --character:#f0a077; --event:#ef6f69;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2838; --side:#171d25; --panel:#16202d; --panel2:#22303f; --header:#171a21;
+  --text:#dce7f0; --muted:#8fa3b5; --accent:#66c0f4; --line:#2a3b4d;
+  --milieu:#4fc1b0; --idea:#c39ae6; --character:#f0a077; --event:#ef6f69;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--header)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);grid-template-columns:100%;
+  background:var(--bg);color:var(--text);font-family:"Barlow","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:6px;height:48px;padding:0 12px;background:var(--header);border-bottom:1px solid var(--line)}
+.brand{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:23px;letter-spacing:.02em;margin-right:14px;white-space:nowrap}
+.brand i{font-style:normal;color:var(--accent)}
+.navbtn{background:none;border:0;padding:8px 10px;border-radius:3px;font-weight:500;color:var(--muted)}
+.navbtn:hover,.navbtn[aria-current="page"]{color:var(--text);background:var(--panel2)}
+.spacer{flex:1}
+.gamesbtn{display:none}
+
+/* shell */
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:0}
+.side{overflow-y:auto;background:var(--side);border-right:1px solid var(--line);padding:10px 0 20px}
+.search{margin:0 10px 10px}
+.search input{width:100%;padding:8px 10px;border-radius:3px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit}
+.search input::placeholder{color:var(--muted)}
+.grp summary{list-style:none;cursor:pointer;padding:6px 12px;font-weight:600;color:var(--muted);font-size:14px;display:flex;align-items:center;gap:8px}
+.grp summary::-webkit-details-marker{display:none}
+.grp summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+.grp[open] summary::before{transform:rotate(90deg)}
+.grp .dot{width:9px;height:9px;border-radius:50%;background:var(--c,var(--muted))}
+.grp .ct{margin-left:auto;font-weight:400;font-size:13px}
+.row{display:flex;align-items:center;gap:10px;padding:5px 12px 5px 26px;color:var(--text)}
+.row:hover{background:var(--panel2)}
+.row[aria-current="page"]{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+.ico{flex:none;width:26px;height:26px;border-radius:2px;overflow:hidden;display:block}
+.ico svg{display:block;width:100%;height:100%}
+.rt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.none{padding:10px 14px;color:var(--muted);font-size:14px}
+
+.main{overflow-y:auto;min-width:0}
+
+/* home */
+.homehead{padding:28px clamp(16px,4vw,40px) 8px;max-width:1200px}
+.homehead h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:clamp(32px,5vw,52px);line-height:1.05;margin:0 0 10px;max-width:16ch}
+.homehead p{margin:0;max-width:62ch;color:var(--muted)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:18px clamp(16px,4vw,40px) 6px;max-width:1200px}
+.def{text-align:left;background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:3px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.def:hover{background:var(--panel2)}
+.def.on{background:var(--panel2);outline:2px solid var(--c);outline-offset:-2px}
+.dn{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:24px;color:var(--c)}
+.dq{font-weight:600;font-size:15px}
+.dl{font-size:14px;color:var(--muted)}
+.dl b{color:var(--text);font-weight:600}
+.count{padding:6px clamp(16px,4vw,40px) 0;font-size:14px;color:var(--muted)}
+.shelf{padding:16px 0 4px}
+.shelf h2{margin:0 clamp(16px,4vw,40px) 10px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px}
+.shelf h2 .dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--accent))}
+.shelf h2 span{font-weight:400;color:var(--muted);font-size:14px}
+.rail{display:flex;gap:12px;overflow-x:auto;padding:2px clamp(16px,4vw,40px) 12px;scroll-snap-type:x proximity}
+.tile{flex:none;width:158px;aspect-ratio:2/3;position:relative;border-radius:3px;overflow:hidden;background:var(--panel2);scroll-snap-align:start;border:1px solid var(--line);transition:transform .15s}
+.tile:hover{transform:translateY(-3px)}
+.tile svg.art{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tile .cap{position:absolute;left:0;right:0;bottom:0;padding:34px 10px 10px;background:linear-gradient(transparent,rgba(8,14,22,.92));color:#f1f6fa}
+.tile .tt{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:21px;line-height:1.05;margin-bottom:7px}
+.sig{display:flex;gap:2px;height:5px}
+.sig span{display:block;height:100%;border-radius:1px}
+.foot{padding:18px clamp(16px,4vw,40px) 40px;color:var(--muted);font-size:14px;max-width:80ch}
+
+/* game page */
+.banner{position:relative;height:clamp(190px,30vw,300px);overflow:hidden;background:var(--panel2)}
+.banner svg.art{position:absolute;inset:0;width:100%;height:100%;display:block}
+.banner::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,var(--bg))}
+.banner .ttl{position:absolute;z-index:2;left:clamp(16px,4vw,40px);right:16px;bottom:10px}
+.banner h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:clamp(36px,6vw,66px);line-height:1;margin:0}
+.banner .by{color:var(--muted);font-size:15px;margin-top:2px}
+.actions{display:flex;flex-wrap:wrap;align-items:stretch;gap:14px;padding:12px clamp(16px,4vw,40px);background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.play{background:linear-gradient(var(--btn1),var(--btn2));color:var(--btntext);border:0;border-radius:3px;padding:10px 26px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:21px;letter-spacing:.02em}
+.play:hover{filter:brightness(1.1)}
+.info{display:flex;flex-direction:column;justify-content:center;font-size:14px;line-height:1.25}
+.info small{color:var(--muted);font-size:13px}
+.info b{font-weight:600}
+.tabs{display:flex;gap:4px;padding:0 clamp(16px,4vw,40px);border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px 9px;font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;padding:22px clamp(16px,4vw,40px) 48px;max-width:1240px}
+.prose h2{font-size:18px;font-weight:600;margin:0 0 4px}
+.prose h2:not(:first-child){margin-top:22px}
+.prose p{margin:0 0 6px;max-width:68ch}
+.lede{font-size:18px;color:var(--text);margin-bottom:10px !important}
+.spoilbtn{margin-top:20px;background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:8px 12px;font-weight:500}
+.spoilbtn:hover{border-color:var(--accent)}
+.spoil{margin-top:8px;padding:10px 14px;border-left:3px solid var(--event);background:var(--panel);max-width:68ch}
+.spoil[hidden]{display:none}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px;margin-bottom:14px}
+.box h3{margin:0 0 10px;font-size:15px;font-weight:600}
+.bar{display:grid;grid-template-columns:76px minmax(0,1fr) 28px;align-items:center;gap:8px;margin-bottom:7px;font-size:14px;color:var(--muted)}
+.bar.dom{color:var(--text);font-weight:600}
+.track{display:block;height:9px;background:var(--panel2);border-radius:2px;overflow:hidden}
+.fill{display:block;height:100%;border-radius:2px}
+.bn{text-align:right}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+dl.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:14px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0}
+.pair{display:flex;gap:10px;align-items:center}
+.pair p{margin:0;font-size:14px}
+.pair a{color:var(--accent);font-weight:600}
+
+/* compare */
+.cmpwrap{padding:22px clamp(16px,4vw,40px) 48px;max-width:1100px}
+.cmpwrap label{font-weight:600;margin-right:8px}
+.cmpwrap select{padding:8px 10px;border-radius:3px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;max-width:100%}
+.cmpgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.cmpcard .mini{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.cmpcard .mini .ico{width:46px;height:46px}
+.cmpcard .mini b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:22px;line-height:1.05;display:block}
+.cmpcard .mini span{font-size:13px;color:var(--muted)}
+.cmptext p{max-width:70ch;margin:0 0 10px}
+.cmptext .thesis{border-left:3px solid var(--accent);padding:6px 12px;background:var(--panel)}
+
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:4px;max-width:min(560px,92vw);padding:20px}
+dialog::backdrop{background:rgba(5,10,16,.6)}
+dialog h2{margin:0 0 8px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:28px}
+dialog p{margin:0 0 10px}
+
+@media (max-width:860px){
+  .gamesbtn{display:inline-block}
+  .shell{grid-template-columns:100%}
+  .side{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 48px);bottom:0;left:0;width:min(86vw,320px);transform:translateX(-102%);transition:transform .2s;border-right:1px solid var(--line)}
+  .side.open{transform:none}
+  .cols{grid-template-columns:100%}
+  .cmpgrid{grid-template-columns:100%}
+  .brand{margin-right:4px;font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="navbtn gamesbtn" id="gamesbtn" aria-expanded="false" aria-controls="side">Games</button>
+  <div class="brand">MICE <i>Library</i></div>
+  <button class="navbtn" id="homebtn" aria-current="page">Library home</button>
+  <div class="spacer"></div>
+  <button class="navbtn" id="themebtn" aria-label="Switch between light and dark theme">Theme</button>
+</header>
+
+<div class="shell">
+  <nav class="side" id="side" aria-label="Game library">
+    <div class="search"><input id="q" type="search" placeholder="Search library" aria-label="Search library" autocomplete="off"></div>
+    <div id="list"></div>
+  </nav>
+  <main class="main" id="main" tabindex="-1"></main>
+</div>
+
+<script>
+const ELS = ["milieu","idea","character","event"];
+const E = {
+  milieu:{name:"Milieu", q:"Where am I, and what is this place like?", starts:"A character enters a strange place.", ends:"The character leaves it."},
+  idea:{name:"Idea", q:"What is going on, and why?", starts:"A question is raised.", ends:"The question is answered."},
+  character:{name:"Character", q:"Who is this person, and what will they become?", starts:"A character is unhappy in their role.", ends:"They change roles or make peace with the one they have."},
+  event:{name:"Event", q:"What is wrong with the world, and who fixes it?", starts:"The order of the world is disturbed.", ends:"Order is restored, or a new order is established."}
+};
+
+const RAW = [
+ {id:"portal", title:`Portal`, kind:"game", creator:`Valve`, year:2007, hues:[200,30], s:[45,85,25,55],
+  blurb:`A sequence of test chambers, a calm machine voice, and a facility whose purpose you don’t yet understand.`,
+  fit:`The central question is what this facility is for and what its voice really wants. Each chamber answers a little more of it, and the game wraps up once the answer lands.`,
+  nested:`An event layer sits on top. You are trying to escape, and that urgency keeps the question moving.`,
+  comp:`Portal is a clean example of an idea story and an event story sharing one plot. Card says one element should lead, and here the question leads while the escape supplies momentum.`,
+  spoiler:`The reveal that an automated system has been running tests on people answers the opening question, and the escape resolves the event.`, pair:["talos-principle",`Both are idea-first and use puzzle rooms to deliver a philosophical question.`]},
+ {id:"outer-wilds", title:`Outer Wilds`, kind:"game", creator:`Mobius Digital`, year:2019, hues:[250,20], s:[65,90,15,30],
+  blurb:`A small solar system stuck in a 22-minute time loop, and a mystery about why.`,
+  fit:`The question of what causes the loop is posed almost immediately and answered by what you have personally learned, not by items or levels. That is close to a literal version of Card’s idea story.`,
+  nested:`A hand-built milieu, with a handful of distinct planets, carries every clue, so the setting and the question are almost inseparable.`,
+  comp:`Progress is stored in the player’s head. Because knowledge is the only currency, the structure of the story and the structure of play become the same thing.`,
+  spoiler:`The final answer is paired with a quieter emotional resolution, which suggests that an idea story can borrow a character ending without losing its shape.`, pair:["talos-principle",`Both are idea-led, and what you learn is the real progress.`]},
+ {id:"subnautica", title:`Subnautica`, kind:"game", creator:`Unknown Worlds Entertainment`, year:2018, hues:[185,215], s:[92,25,15,40],
+  blurb:`You escape a crashed starship into an alien ocean and have to find a way home.`,
+  fit:`Card’s milieu story begins when someone enters a strange place and ends when they leave. You enter the ocean after the crash, and the game concludes with your departure.`,
+  nested:`An event layer, including a threat tied to the crash, nudges you to dive deeper than you would on curiosity alone.`,
+  comp:`Exploration is the reward. Depth, biomes, and creatures matter more than any plot beat, which makes this the milieu story in its purest game form.`,
+  spoiler:null, pair:["no-mans-sky",`Both are about entering and leaving worlds, but only one of them is built around a single place.`]},
+ {id:"bioshock", title:`BioShock`, kind:"game", creator:`2K Boston (Irrational Games)`, year:2007, hues:[170,35], s:[88,70,20,45],
+  blurb:`A plane crash drops you beside an underwater city built on a philosophy.`,
+  fit:`The milieu structure fits neatly. You enter Rapture by bathysphere, and the game is about moving through it. The architecture, advertising, and recorded diaries do much of the storytelling.`,
+  nested:`An idea is running underneath: what is freedom, and who is actually choosing? A mid-game reveal answers a question the player has been carrying without noticing.`,
+  comp:`BioShock is a strong case for milieu and idea co-leading. Rapture is explored and interrogated at the same time, so Card’s “pick a lead element” advice feels a little too tidy here.`,
+  spoiler:`The reveal built around the phrase “would you kindly” recasts the player’s obedience as the answer to the story’s question about free will.`, pair:["subnautica",`Both put you in an underwater place that explains itself through what you find.`]},
+ {id:"half-life-2", title:`Half-Life 2`, kind:"game", creator:`Valve`, year:2004, hues:[28,215], s:[60,20,25,88],
+  blurb:`A resistance fights an alien-backed occupation in and around City 17.`,
+  fit:`The order of the world is wrong from the start, with an occupation already in place. The story is about pushing against that order, and Gordon Freeman’s actions drive toward restoring one or founding a new one.`,
+  nested:`City 17 is a rich milieu, and the way you move through its districts does much of the pacing.`,
+  comp:`The ending doesn’t cleanly restore anything, because the story is deliberately left open. That is a useful test of Card’s claim that an event story ends with order restored or replaced.`,
+  spoiler:null, pair:["deus-ex",`Both are event stories about resisting a system that has taken control.`]},
+ {id:"mass-effect-2", title:`Mass Effect 2`, kind:"game", creator:`BioWare`, year:2010, hues:[15,230], s:[40,20,60,85],
+  blurb:`You assemble a crew to stop a threat that is abducting human colonies.`,
+  fit:`The order is wrong because colonies are disappearing. The campaign ends with the strike on the people responsible, which is the event shape Card describes.`,
+  nested:`Each squadmate’s loyalty mission works like a small character story: someone unhappy in a role who changes it or makes peace with it.`,
+  comp:`Character arcs are nested inside an event frame, and how they turn out changes who survives the finale. The layers are not independent, which is something Card’s list can’t show on its own.`,
+  spoiler:null, pair:["detroit",`Both nest personal arcs inside a larger conflict and let your choices shape them.`]},
+ {id:"soma", title:`SOMA`, kind:"game", creator:`Frictional Games`, year:2015, hues:[290,190], s:[50,90,40,20],
+  blurb:`An underwater facility, a copy of a mind, and the question of what makes someone the same person.`,
+  fit:`The question is what continuity of self really means. Each discovery shifts the answer, and the ending asks you to live with it.`,
+  nested:`The facility is a tight, claustrophobic milieu, but it exists to stage the question.`,
+  comp:`Nothing here can be restored, so there is no event-style ending to fall back on. The delivery of the answer is what ends the story.`,
+  spoiler:`The scene about copying a consciousness turns the idea into a decision the player has to feel instead of just understand.`, pair:["portal",`Both are idea-led stories built around a machine intelligence and what it wants.`]},
+ {id:"detroit", title:`Detroit: Become Human`, kind:"game", creator:`Quantic Dream`, year:2018, hues:[205,330], s:[30,30,88,60],
+  blurb:`Three androids begin unhappy with the roles humans have assigned them.`,
+  fit:`Card’s character story starts when someone is unhappy in their role and ends when they change it or accept it. Kara, Connor, and Markus each follow that line.`,
+  nested:`An event layer, an android uprising, runs through all three, and your choices influence whether order is restored or a new one emerges.`,
+  comp:`Branching choices make Card’s structure interactive: the player decides how each character’s role resolves.`,
+  spoiler:null, pair:["life-is-strange",`Both are character-led and lean on choices to resolve who the protagonist becomes.`]},
+ {id:"deus-ex", title:`Deus Ex`, kind:"game", creator:`Ion Storm`, year:2000, hues:[45,230], s:[40,55,35,85],
+  blurb:`A near-future conspiracy involving a plague, corporations, and surveillance.`,
+  fit:`The protagonist discovers that the world’s order is not what it seems, and the story ends when he chooses what replaces it.`,
+  nested:`Ideas surface constantly in conversations about who should control the systems everyone relies on.`,
+  comp:`Card allows an event story to end by restoring order or by establishing a new one. Here the player picks which new order, so the second option becomes a choice.`,
+  spoiler:null, pair:["half-life-2",`Both are event stories about a world run by powers you have to push against.`]},
+ {id:"talos-principle", title:`The Talos Principle`, kind:"game", creator:`Croteam`, year:2014, hues:[160,50], s:[45,88,20,15],
+  blurb:`Puzzle rooms in a strange simulation, and a voice that asks what it means to be a person.`,
+  fit:`A philosophical question is raised through terminals and a voice that challenges your answers. The story ends when you settle on your own response.`,
+  nested:`The ruins and rooms form a quiet milieu, but they are there to hold the question.`,
+  comp:`The puzzles are the mechanics of the idea. Solving them is how the question is explored, so gameplay and structure line up.`,
+  spoiler:null, pair:["portal",`Both are idea-first and deliver a big question through puzzle rooms.`]},
+ {id:"no-mans-sky", title:`No Man’s Sky`, kind:"game", creator:`Hello Games`, year:2016, hues:[310,185], s:[95,15,10,15],
+  blurb:`Procedurally generated planets that you can land on, explore, and leave.`,
+  fit:`Every planet works like a small milieu story: it begins when you land and ends when you take off. The game is built from thousands of them.`,
+  nested:`Story missions exist, but their main job is to give the exploring a direction.`,
+  comp:`A game made of countless milieus shows both the strength and the limit of the form. Without a question or a conflict, a place has to hold attention on its own.`,
+  spoiler:null, pair:["subnautica",`Both put exploration first, though Subnautica ties it to one carefully built place.`]},
+ {id:"life-is-strange", title:`Life Is Strange`, kind:"game", creator:`Dontnod Entertainment`, year:2015, hues:[345,200], s:[30,35,90,55],
+  blurb:`A student discovers she can rewind time and uses it to change her relationships.`,
+  fit:`Max’s arc, learning what her ability costs and what role she will accept, drives the story. That is the shape of a character story.`,
+  nested:`An event frame, including a missing student and an approaching storm, provides plot while the relationships carry the emotion.`,
+  comp:`The time-rewind mechanic lets you test different versions of a role before you commit, which turns the character story into something you can rehearse.`,
+  spoiler:`The final choice forces Max to decide what role she will accept, which is the ending Card describes for a character story.`, pair:["detroit",`Both are character-led and lean on choices to resolve who the protagonist becomes.`]}
+];
+
+const G = RAW.map(g=>{
+  const s = {}; ELS.forEach((k,i)=>s[k]=g.s[i]);
+  const dom = ELS.reduce((a,b)=>s[b]>s[a]?b:a, ELS[0]);
+  return {...g, s, dom};
+});
+const BY = Object.fromEntries(G.map(g=>[g.id,g]));
+
+/* ---------- generated cover art ---------- */
+function rng(str){let h=2166136261;for(const ch of str){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}
+  return ()=>{h+=0x6D2B79F5;let t=Math.imul(h^h>>>15,1|h);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296}}
+let artN = 0;
+function art(g,w,h,cls){
+  const r = rng(g.id), id = "ag"+(artN++), [h1,h2] = g.hues;
+  let m = "";
+  if(g.dom==="milieu"){
+    for(let i=0;i<7;i++){
+      const y = h*(0.3+i*0.1); let p = `M0 ${h} L0 ${y}`;
+      for(let x=0;x<=w;x+=w/8){p += ` L${x} ${y+(r()-.5)*h*0.08}`}
+      m += `<path d="${p} L${w} ${h} Z" fill="#fff" fill-opacity="${0.035+i*0.018}"/>`;
+    }
+  } else if(g.dom==="idea"){
+    const cx = w*(0.3+r()*0.4), cy = h*0.42;
+    for(let i=1;i<=7;i++) m += `<circle cx="${cx}" cy="${cy}" r="${i*h*0.09}" fill="none" stroke="#fff" stroke-opacity="${0.34-i*0.035}" stroke-width="${Math.max(1,h*0.006)}"/>`;
+    m += `<circle cx="${cx}" cy="${cy}" r="${h*0.025}" fill="#fff" fill-opacity=".8"/>`;
+  } else if(g.dom==="character"){
+    m += `<circle cx="${w*0.62}" cy="${h*0.4}" r="${h*0.34}" fill="#fff" fill-opacity=".1"/>`;
+    m += `<circle cx="${w*0.62}" cy="${h*0.4}" r="${h*0.11}" fill="#fff" fill-opacity=".38"/>`;
+    m += `<circle cx="${w*0.28}" cy="${h*0.66}" r="${h*0.05}" fill="#fff" fill-opacity=".22"/>`;
+  } else {
+    const cx = w*(0.3+r()*0.4), cy = h*0.4;
+    for(let i=0;i<16;i++){const a = i/16*Math.PI*2+r()*.2, l = Math.max(w,h);
+      m += `<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a)*l}" y2="${cy+Math.sin(a)*l}" stroke="#fff" stroke-opacity="${0.08+r()*0.14}" stroke-width="${Math.max(1,h*0.01+r()*h*0.012)}"/>`}
+    m += `<polygon points="${w*0.1},${h} ${w*0.5},${h*0.55} ${w*0.56},${h*0.55} ${w*0.2},${h}" fill="#fff" fill-opacity=".07"/>`;
+  }
+  return `<svg class="${cls||""}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h1} 52% 17%)"/><stop offset="1" stop-color="hsl(${h2} 58% 38%)"/></linearGradient></defs><rect width="${w}" height="${h}" fill="url(#${id})"/>${m}</svg>`;
+}
+
+/* ---------- helpers ---------- */
+const $ = s=>document.querySelector(s);
+const main = $("#main"), list = $("#list"), side = $("#side");
+let homeFilter = null, tab = "analysis", cmpWith = null, current = null;
+
+function bars(g){
+  return ELS.map(k=>`<div class="bar${g.dom===k?" dom":""}"><span>${E[k].name}</span><span class="track"><span class="fill" style="width:${g.s[k]}%;background:var(--${k})"></span></span><span class="bn">${g.s[k]}</span></div>`).join("");
+}
+function sig(g){
+  const t = ELS.reduce((a,k)=>a+g.s[k],0);
+  return `<div class="sig" aria-hidden="true">${ELS.map(k=>`<span style="width:${g.s[k]/t*100}%;background:var(--${k})"></span>`).join("")}</div>`;
+}
+function tile(g){
+  return `<a class="tile" href="#${g.id}" aria-label="${g.title}, led by ${E[g.dom].name}">${art(g,300,450,"art")}<div class="cap"><div class="tt">${g.title}</div>${sig(g)}</div></a>`;
+}
+
+/* ---------- sidebar ---------- */
+function renderList(){
+  const q = $("#q").value.trim().toLowerCase();
+  const match = g=>!q || g.title.toLowerCase().includes(q);
+  const row = g=>`<a class="row" href="#${g.id}"${current===g.id?` aria-current="page"`:""}><span class="ico">${art(g,100,100)}</span><span class="rt">${g.title}</span></a>`;
+  const group = (label,items,color)=> items.length ? `<details class="grp" open><summary><span class="dot"${color?` style="--c:var(--${color})"`:""}></span>${label}<span class="ct">${items.length}</span></summary>${items.map(row).join("")}</details>` : "";
+  let html = "";
+  ELS.forEach(k=>{ html += group(`${E[k].name}-led games`, G.filter(g=>g.kind==="game"&&g.dom===k&&match(g)), k); });
+  list.innerHTML = html || `<div class="none">Nothing in the library matches “${q.replace(/[<>&]/g,"")}”.</div>`;
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  current = null; renderList();
+  const defs = ELS.map(k=>`<button class="def${homeFilter===k?" on":""}" data-el="${k}" aria-pressed="${homeFilter===k}" style="--c:var(--${k})"><span class="dn">${E[k].name}</span><span class="dq">${E[k].q}</span><span class="dl"><b>Begins:</b> ${E[k].starts}</span><span class="dl"><b>Ends:</b> ${E[k].ends}</span></button>`).join("");
+  const shelf = (label,items,color)=> items.length ? `<section class="shelf"><h2><span class="dot"${color?` style="--c:var(--${color})"`:""}></span>${label} <span>${items.length}</span></h2><div class="rail">${items.map(tile).join("")}</div></section>` : "";
+  const f = g=>!homeFilter || g.dom===homeFilter;
+  let shelves = "";
+  ELS.forEach(k=>{ shelves += shelf(`${E[k].name}-led games`, G.filter(g=>g.kind==="game"&&g.dom===k&&f(g)), k); });
+  const shown = G.filter(f).length;
+  main.innerHTML = `
+    <div class="homehead"><h1>Which element is driving the story?</h1>
+    <p>Orson Scott Card says every story is built around one of four elements. Browse science fiction games by the element that seems to lead each one. Pick an element below to filter the shelves.</p></div>
+    <div class="defs">${defs}</div>
+    <div class="count" aria-live="polite">Showing ${shown} of ${G.length} titles${homeFilter?` led by ${E[homeFilter].name}`:""}.</div>
+    ${shelves}
+    <div class="foot">The bar under each cover shows the mix of the four elements. Scores are interpretive, so open any title and compare it with another.</div>`;
+  main.scrollTop = 0;
+}
+
+/* ---------- game page ---------- */
+function renderGame(g){
+  current = g.id; renderList();
+  const pr = g.pair ? BY[g.pair[0]] : null;
+  const analysis = `
+    <div class="cols">
+      <div class="prose">
+        <p class="lede">${g.blurb}</p>
+        <h2>How it fits Card’s model</h2><p>${g.fit}</p>
+        <h2>Supporting elements</h2><p>${g.nested}</p>
+        <h2>Where the model gets complicated</h2><p>${g.comp}</p>
+        ${g.spoiler?`<button class="spoilbtn" data-spoil aria-expanded="false" aria-controls="sp">Show spoiler note</button><p class="spoil" id="sp" hidden>${g.spoiler}</p>`:""}
+      </div>
+      <aside>
+        <div class="box"><h3>MICE profile</h3>${bars(g)}<p class="note">Interpretive scores from 0 to 100 for how strongly each element shapes the structure.</p></div>
+        <div class="box"><h3>Details</h3><dl class="kv"><dt>Leading element</dt><dd style="color:var(--${g.dom});font-weight:600">${E[g.dom].name}</dd><dt>${g.kind==="game"?"Developer":"Author"}</dt><dd>${g.creator}</dd><dt>${g.kind==="game"?"Released":"Published"}</dt><dd>${g.year}</dd><dt>Format</dt><dd>${g.kind==="game"?"Video game":"Short story"}</dd></dl></div>
+        ${pr?`<div class="box"><h3>Pairs well with</h3><div class="pair"><span class="ico" style="width:40px;height:40px">${art(pr,100,100)}</span><p><a href="#${pr.id}">${pr.title}</a><br>${g.pair[1]}</p></div></div>`:""}
+      </aside>
+    </div>`;
+  main.innerHTML = `
+    <div class="banner">${art(g,900,300,"art")}<div class="ttl"><h1>${g.title}</h1><div class="by">${g.creator}, ${g.year}</div></div></div>
+    <div class="actions">
+      <button class="play" data-opencmp>Compare with another</button>
+      <div class="info"><small>Leading element</small><b style="color:var(--${g.dom})">${E[g.dom].name}</b></div>
+      <div class="info"><small>${g.kind==="game"?"Video game":"Course reading"}</small><b>${g.year}</b></div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="analysis" aria-selected="${tab==="analysis"}">Analysis</button>
+      <button class="tab" role="tab" data-tab="compare" aria-selected="${tab==="compare"}">Compare</button>
+    </div>
+    <div id="panel">${tab==="analysis"?analysis:compareHTML(g)}</div>`;
+  main.scrollTop = 0;
+}
+
+const lc = t=>t.charAt(0).toLowerCase()+t.slice(1).replace(/\.$/,"");
+function compareHTML(a){
+  if(!cmpWith || cmpWith===a.id) cmpWith = (a.pair && a.pair[0]) || G.find(x=>x.id!==a.id).id;
+  const b = BY[cmpWith];
+  const opts = G.filter(x=>x.id!==a.id).map(x=>`<option value="${x.id}"${x.id===cmpWith?" selected":""}>${x.title}</option>`).join("");
+  const card = g=>`<div class="box cmpcard"><div class="mini"><span class="ico">${art(g,100,100)}</span><div><b>${g.title}</b><span>${g.creator}, ${g.year}</span></div></div>${bars(g)}</div>`;
+  const gap = ELS.map(k=>({k,d:Math.abs(a.s[k]-b.s[k])})).sort((x,y)=>y.d-x.d)[0].k;
+  const shared = ELS.filter(k=>k!==a.dom&&k!==b.dom&&a.s[k]>=50&&b.s[k]>=50);
+  const lead = a.dom===b.dom
+    ? `Both are led by <strong style="color:var(--${a.dom})">${E[a.dom].name}</strong>. In Card’s terms, the story begins when ${lc(E[a.dom].starts)}, and it finishes when ${lc(E[a.dom].ends)}.`
+    : `${a.title} is led by <strong style="color:var(--${a.dom})">${E[a.dom].name}</strong>, while ${b.title} is led by <strong style="color:var(--${b.dom})">${E[b.dom].name}</strong>.`;
+  const gapT = `The widest gap is in ${E[gap].name.toLowerCase()}, scored ${a.s[gap]} for ${a.title} and ${b.s[gap]} for ${b.title}.`;
+  const shT = shared.length ? ` Both also lean on ${shared.map(k=>E[k].name.toLowerCase()).join(" and ")}.` : "";
+  const sec = k=>ELS.filter(x=>x!==k).reduce((p,c)=>a.s[c]+b.s[c]>a.s[p]+b.s[p]?c:p);
+  const angle = a.dom===b.dom
+    ? `Possible thesis angle: both stories use ${E[a.dom].name.toLowerCase()} as their frame. How does each one use ${E[sec(a.dom)].name.toLowerCase()} to support it, and does that change what each can say?`
+    : `Possible thesis angle: the leading element limits what a story can conclude. How does ${E[a.dom].name.toLowerCase()} shape the ending of ${a.title} compared with ${E[b.dom].name.toLowerCase()} in ${b.title}?`;
+  return `<div class="cmpwrap">
+    <label for="cmp">Compare ${a.title} with</label><select id="cmp">${opts}</select>
+    <div class="cmpgrid">${card(a)}${card(b)}</div>
+    <div class="cmptext"><p>${lead}</p><p>${gapT}${shT}</p><p class="thesis">${angle}</p></div>
+  </div>`;
+}
+
+/* ---------- routing & events ---------- */
+function route(){
+  const id = location.hash.replace("#","");
+  side.classList.remove("open"); $("#gamesbtn").setAttribute("aria-expanded","false");
+  const g = BY[id];
+  $("#homebtn").setAttribute("aria-current", g ? "false" : "page");
+  if(g){ if(current!==g.id){tab="analysis";cmpWith=null;} renderGame(g); }
+  else renderHome();
+}
+window.addEventListener("hashchange", route);
+
+main.addEventListener("click", e=>{
+  const d = e.target.closest("[data-el]");
+  if(d){ homeFilter = homeFilter===d.dataset.el ? null : d.dataset.el; renderHome(); return; }
+  const t = e.target.closest("[data-tab]");
+  if(t && current){ tab = t.dataset.tab; renderGame(BY[current]); return; }
+  if(e.target.closest("[data-opencmp]") && current){ tab="compare"; renderGame(BY[current]); return; }
+  const s = e.target.closest("[data-spoil]");
+  if(s){ const p = $("#sp"); const open = p.hidden; p.hidden = !open; s.setAttribute("aria-expanded", String(open)); s.textContent = open ? "Hide spoiler note" : "Show spoiler note"; }
+});
+main.addEventListener("change", e=>{
+  if(e.target.id==="cmp" && current){ cmpWith = e.target.value; const y = main.scrollTop; renderGame(BY[current]); main.scrollTop = y; }
+});
+$("#q").addEventListener("input", renderList);
+$("#homebtn").addEventListener("click", ()=>{ if(location.hash){ location.hash = ""; history.replaceState(null,"",location.pathname+location.search); route(); } else route(); });
+$("#gamesbtn").addEventListener("click", ()=>{ const o = side.classList.toggle("open"); $("#gamesbtn").setAttribute("aria-expanded", String(o)); });
+$("#themebtn").addEventListener("click", ()=>{
+  const r = document.documentElement;
+  const cur = r.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  r.dataset.theme = cur==="dark" ? "light" : "dark";
+});
+route();
+</script>
+</body>
+</html>
